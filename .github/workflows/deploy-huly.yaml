@@ -16,11 +16,11 @@ jobs:
       NAMESPACE: huly
 
     steps:
-      # Step 1: Checkout repository
+      # Step 1: Checkout Code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Step 2: Authenticate with Google Cloud
+      # Step 2: Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
@@ -31,42 +31,42 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
           service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          project_id: ${{ env.PROJECT_ID }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
 
       # Step 4: Install gke-gcloud-auth-plugin
       - name: Install gke-gcloud-auth-plugin
         run: |
           gcloud components install gke-gcloud-auth-plugin
 
-    # Step 3: Authenticate with GKE
-    - name: Authenticate with GKE
-      run: |
-        gcloud container clusters get-credentials ${{ env.GKE_CLUSTER_NAME }} \
-          --zone ${{ env.GCP_ZONE }}
+      # Step 5: Authenticate with GKE
+      - name: Authenticate with GKE
+        run: |
+          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER_NAME }} \
+            --zone ${{ env.GCP_ZONE }}
 
-    # Step 4: Create Namespace (if necessary)
-    - name: Create Namespace
-      run: |
-        kubectl create namespace ${{ env.NAMESPACE }} || true
+      # Step 6: Create Namespace (if necessary)
+      - name: Create Namespace
+        run: |
+          kubectl create namespace ${{ env.NAMESPACE }} || true
 
-    # Step 5: Apply Configurations (ConfigMaps and Secrets)
-    - name: Apply Configurations
-      run: |
-        kubectl apply -f config/ -n ${{ env.NAMESPACE }}
+      # Step 7: Apply Configurations (ConfigMaps and Secrets)
+      - name: Apply Configurations
+        run: |
+          kubectl apply -f config/ -n ${{ env.NAMESPACE }}
 
-    # Step 6: Apply Persistent Volume Claims
-    - name: Apply Persistent Volume Claims
-      run: |
-        kubectl apply -f elastic/elastic-persistentvolumeclaim.yaml -n ${{ env.NAMESPACE }}
-        kubectl apply -f minio/files-persistentvolumeclaim.yaml -n ${{ env.NAMESPACE }}
-        kubectl apply -f mongodb/mongodb-persistentvolumeclaim.yml -n ${{ env.NAMESPACE }}
+      # Step 8: Apply Persistent Volume Claims
+      - name: Apply Persistent Volume Claims
+        run: |
+          kubectl apply -f elastic/elastic-persistentvolumeclaim.yaml -n ${{ env.NAMESPACE }}
+          kubectl apply -f minio/files-persistentvolumeclaim.yaml -n ${{ env.NAMESPACE }}
+          kubectl apply -f mongodb/mongodb-persistentvolumeclaim.yml -n ${{ env.NAMESPACE }}
 
-    # Step 7: Deploy Application Services
-    - name: Deploy Application
-      run: |
-        kubectl apply -f . -n ${{ env.NAMESPACE }}
+      # Step 9: Deploy Application Services
+      - name: Deploy Application
+        run: |
+          kubectl apply -f . -n ${{ env.NAMESPACE }}
 
-    # Step 8: Verify Deployment
-    - name: Verify Deployment
-      run: |
-        kubectl get all -n ${{ env.NAMESPACE }}
+      # Step 10: Verify Deployment
+      - name: Verify Deployment
+        run: |
+          kubectl get all -n ${{ env.NAMESPACE }}
