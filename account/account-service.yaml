@@ -5,6 +5,7 @@ metadata:
     app: account
   name: account
 spec:
+  type: ClusterIP
   ports:
     - port: 80
       targetPort: 3000
