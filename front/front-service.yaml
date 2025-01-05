@@ -3,6 +3,9 @@ kind: Service
 metadata:
   name: front
   namespace: huly
+  annotations:
+    cloud.google.com/load-balancer-type: "external"
+    networking.gke.io/load-balancer-ipv4: "huly-static-ip"
 spec:
   type: LoadBalancer
   selector:
