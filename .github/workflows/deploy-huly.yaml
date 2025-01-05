@@ -61,10 +61,10 @@ jobs:
           kubectl apply -f minio/files-persistentvolumeclaim.yaml -n ${{ env.NAMESPACE }}
           kubectl apply -f mongodb/mongodb-persistentvolumeclaim.yml -n ${{ env.NAMESPACE }}
 
-      # Step 9: Deploy Application Services
-      - name: Deploy Application
+      # Step 9: Deploy All Services
+      - name: Deploy All Services
         run: |
-          kubectl apply -f . -n ${{ env.NAMESPACE }}
+          find . -type f \( -name "*.yaml" -o -name "*.yml" \) -exec kubectl apply -f {} -n ${{ env.NAMESPACE }} \;
 
       # Step 10: Verify Deployment
       - name: Verify Deployment
