@@ -9,6 +9,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      GCP_PROJECT_ID: self-hosted-projects-444508
+      GKE_CLUSTER_NAME: huly-cluster
+      GCP_ZONE: us-central1
+      NAMESPACE: huly
+
     steps:
     # Step 1: Checkout the repository
     - name: Checkout repository
@@ -19,37 +25,37 @@ jobs:
       uses: google-github-actions/setup-gcloud@v1
       with:
         service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        project_id: ${{ env.GCP_PROJECT_ID }}
 
     # Step 3: Authenticate with GKE
     - name: Authenticate with GKE
       run: |
-        gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
-          --zone ${{ secrets.GCP_ZONE }}
+        gcloud container clusters get-credentials ${{ env.GKE_CLUSTER_NAME }} \
+          --zone ${{ env.GCP_ZONE }}
 
     # Step 4: Create Namespace (if necessary)
     - name: Create Namespace
       run: |
-        kubectl create namespace huly || true
+        kubectl create namespace ${{ env.NAMESPACE }} || true
 
     # Step 5: Apply Configurations (ConfigMaps and Secrets)
     - name: Apply Configurations
       run: |
-        kubectl apply -f kube/config/ -n huly
+        kubectl apply -f config/ -n ${{ env.NAMESPACE }}
 
     # Step 6: Apply Persistent Volume Claims
     - name: Apply Persistent Volume Claims
       run: |
-        kubectl apply -f elastic/elastic-persistentvolumeclaim.yaml -n huly
-        kubectl apply -f minio/files-persistentvolumeclaim.yaml -n huly
-        kubectl apply -f mongodb/mongodb-persistentvolumeclaim.yml -n huly
+        kubectl apply -f elastic/elastic-persistentvolumeclaim.yaml -n ${{ env.NAMESPACE }}
+        kubectl apply -f minio/files-persistentvolumeclaim.yaml -n ${{ env.NAMESPACE }}
+        kubectl apply -f mongodb/mongodb-persistentvolumeclaim.yml -n ${{ env.NAMESPACE }}
 
     # Step 7: Deploy Application Services
     - name: Deploy Application
       run: |
-        kubectl apply -f kube/ -n huly
+        kubectl apply -f . -n ${{ env.NAMESPACE }}
 
     # Step 8: Verify Deployment
     - name: Verify Deployment
       run: |
-        kubectl get all -n huly
+        kubectl get all -n ${{ env.NAMESPACE }}
